@@ -1,0 +1,20 @@
+@import "tailwindcss";
+/* index.css or App.css */
+/* index.css or App.css */
+
+html, body, .app {
+  margin: 0;
+  padding: 0;
+  background-color: #191E2CFF; /* Same as navbar */
+  min-height: 100vh;
+  color: white; /* Ensure text is readable */
+  font-family: sans-serif;
+}
+
+.content {
+  margin-left: 230px; /* To avoid sidebar overlap */
+  padding: 20px;
+}
+* {
+  color: white;
+}
