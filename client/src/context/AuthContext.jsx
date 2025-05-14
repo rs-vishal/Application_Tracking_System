@@ -29,7 +29,14 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", userData.token);
     console.log("User data stored in localStorage:", userData);
   };
-
+  const token = localStorage.getItem("token");
+  if(!token){
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("username");
+    localStorage.removeItem("email");
+    localStorage.removeItem("role");
+  }
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");

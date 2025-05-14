@@ -7,9 +7,11 @@ import Users from "./pages/Users";
 import Register from './pages/Register';
 import {useAuth} from './context/AuthContext';
 import AdminApplications from './pages/AdminApplications';
+import Settings from "./pages/Settings";
 import AdminRecruiters from './pages/AdminRecruiters';
 import Jobs from './pages/Jobs';
 import UserAppliedJobs from './pages/UserAppliedjobs';
+import ResumeView from './pages/ResumeView';
 function App() {
   const token = localStorage.getItem("token");
   const { user } = useAuth();
@@ -26,8 +28,10 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path='users' element={<Users/>}/>
               <Route path="/" element={<Home />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path='jobs' element={<Jobs/>}/>
-              <Route path='applied-jobs' element={<UserAppliedJobs/>}/>
+              <Route path='/applied-jobs' element={<UserAppliedJobs/>}/>
+              <Route path= '/resume' element={<ResumeView/>}/>
               {role === "admin" && (
                 <>
                   {/* <Route path="/admin" element={<h1>Admin</h1>} /> */}

@@ -9,6 +9,7 @@ import { TbListDetails } from "react-icons/tb";
 import { RiFileList3Line } from "react-icons/ri";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdLogout } from "react-icons/md";
+import { FaRegFilePdf } from "react-icons/fa";
 import { PiSuitcaseSimpleBold } from "react-icons/pi";
 import { PiSlideshowFill as LuLayoutDashboard } from "react-icons/pi";
 
@@ -93,6 +94,9 @@ function Nav() {
             <NavItem to="/applied-jobs" icon={<PiSuitcaseSimpleBold />}>Applied Jobs</NavItem>
             <Divider />
             <NavItem to="/jobs" icon={<PiSuitcaseSimpleBold />}>All Jobs</NavItem>
+            <Divider />
+            <NavItem to="/resume" icon={<FaRegFilePdf />}>My Resume</NavItem>
+
           </>
         );
       default:

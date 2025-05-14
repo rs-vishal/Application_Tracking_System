@@ -5,7 +5,9 @@ const Application = require("../models/applications.js");
 const Job = require("../models/job.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
@@ -76,7 +78,19 @@ router.get('/application/:userId',async (req,res) => {
         res.status(500).send("Server error");
     }
 });
-
+router.get("/user/:id", async (req, res) => {
+    try{
+        const user = await Model.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+        res.status(200).json(user);
+    }
+    catch(err){
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+});    
 router.get('/applications',async (req,res) => {
     try{
         const applications = await Application.find()
@@ -155,20 +169,72 @@ router.get('/job/:id', async (req, res) => {
     }
 });
 
-router.put('/edit_profile/:id',async (req,res)=>{
-  const userId = req.params.id;
-  const {username,email,skills} = req.body;
-  try{
-    const user = await Model.findByIdAndUpdate(userId,{username,email,skills},{new:true});
-    if(!user){
-        return res.status(404).json({msg:"User not found"});
-    }
-    res.status(200).json({msg:"User updated successfully",user});
+const upload = multer({
+  dest: 'uploads/',
+  fileFilter: (req, file, cb) => {
+    const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    cb(null, allowed.includes(file.mimetype));
   }
-  catch(err){
-    console.error(err.message);
-    res.status(500).send("Server error");
-  }
-})
+});
 
+router.get('/resume/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await Model.findById(id);
+    if (!user || !user.resume) {
+      return res.status(404).json({ msg: 'Resume not found for this user' });
+    }
+
+    const normalizedPath = user.resume.replace(/\\/g, '/');
+    const absolutePath = path.resolve(__dirname, '..', normalizedPath);
+
+    if (!fs.existsSync(absolutePath)) {
+      return res.status(404).json({ msg: 'Resume file does not exist on server' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="resume.pdf"');
+
+    const fileStream = fs.createReadStream(absolutePath);
+    fileStream.pipe(res);
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+
+router.put('/edit_profile/:id', upload.single('resume'), async (req, res) => {
+  const { id } = req.params;
+  const { username, email, skills } = req.body;
+  try {
+    let skillsArray = [];
+
+    if (typeof skills === 'string') {
+      try {
+        skillsArray = JSON.parse(skills);
+      } catch (e) {
+        return res.status(400).json({ msg: 'Invalid skills format' });
+      }
+    }
+    const updateFields = {
+      username,
+      email,
+      skills: skillsArray,
+    };
+    if (req.file) {
+      updateFields.resume = req.file.path;
+    }
+    const user = await Model.findByIdAndUpdate(id, updateFields, { new: true });
+
+    if (!user) return res.status(404).json({ msg: 'User not found' });
+
+    res.status(200).json({ msg: 'Profile updated', user });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
 module.exports = router;
