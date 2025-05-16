@@ -71,7 +71,7 @@ function Nav() {
             <Divider />
             <NavItem to="/admin/applications" icon={<TbListDetails />}>Applications</NavItem>
             <Divider />
-            <NavItem to="/users" icon={<BsPeopleFill />}>Users</NavItem>
+            <NavItem to="/admin/users" icon={<BsPeopleFill />}>Users</NavItem>
           </>
         );
       case "recruiter":
@@ -96,6 +96,7 @@ function Nav() {
             <NavItem to="/jobs" icon={<PiSuitcaseSimpleBold />}>All Jobs</NavItem>
             <Divider />
             <NavItem to="/resume" icon={<FaRegFilePdf />}>My Resume</NavItem>
+
 
           </>
         );

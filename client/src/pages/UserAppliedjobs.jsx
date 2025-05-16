@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { LuSearch } from "react-icons/lu";
 
 const UserAppliedJobs = () => {
@@ -9,6 +19,9 @@ const UserAppliedJobs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // State for modal
+  const [selectedApplication, setSelectedApplication] = useState(null);
 
   // Fetch applications for the current user
   useEffect(() => {
@@ -56,6 +69,7 @@ const UserAppliedJobs = () => {
 
   return (
     <div className="p-6 bg-gray-900 min-h-screen text-white">
+      {/* Title */}
       <h1 className="text-2xl font-bold mb-6">Jobs You've Applied For</h1>
 
       {/* Search Bar */}
@@ -74,7 +88,10 @@ const UserAppliedJobs = () => {
             placeholder:text-gray-400
           "
         />
-        
+        {/* <LuSearch
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+          size={16}
+        /> */}
       </div>
 
       {/* Results Section */}
@@ -87,12 +104,11 @@ const UserAppliedJobs = () => {
           {filteredApplications.map((app) => (
             <div
               key={app._id}
-              className="bg-gray-800 p-5 rounded-lg shadow hover:bg-gray-700 transition duration-200"
+              onClick={() => setSelectedApplication(app)}
+              className="bg-gray-800 cursor-pointer p-5 rounded-xl shadow-lg hover:shadow-xl hover:bg-gray-750 transition-all duration-300 transform hover:-translate-y-1"
             >
               <h3 className="font-semibold text-lg mb-2">{app.jobId.title}</h3>
-              <p className="text-sm text-gray-300 mb-1">
-                Company: {app.jobId.company}
-              </p>
+              <p className="text-sm text-gray-300 mb-1">Company: {app.jobId.company}</p>
               <p className="text-sm text-gray-300 mb-1">
                 Salary:{" "}
                 {app.jobId.salary ? `$${app.jobId.salary}` : "Not specified"}
@@ -110,6 +126,64 @@ const UserAppliedJobs = () => {
           ))}
         </div>
       )}
+
+      {/* Modal for Job Details */}
+      <Dialog
+        open={Boolean(selectedApplication)}
+        onClose={() => setSelectedApplication(null)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          style: {
+            backgroundColor: "#1f2937", // Dark background
+            color: "white",
+          },
+        }}
+      >
+        <DialogTitle className="flex justify-between items-center bg-gray-800 rounded-t-lg">
+          <span>Job Details</span>
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={() => setSelectedApplication(null)}
+            aria-label="close"
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers className="bg-gray-900 p-4">
+          {selectedApplication && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Job Title: {selectedApplication.jobId.title}
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                Company: {selectedApplication.jobId.company}
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                Salary:{" "}
+                {selectedApplication.jobId.salary
+                  ? `$${selectedApplication.jobId.salary}`
+                  : "Not specified"}
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                Status: <strong>{selectedApplication.status}</strong>
+              </Typography>
+              <Typography variant="body2" paragraph>
+                Description: {selectedApplication.jobId.description || "No description provided."}
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                Applied On: {new Date(selectedApplication.appliedAt).toLocaleString()}
+              </Typography>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions className="bg-gray-800 p-3">
+          <Button onClick={() => setSelectedApplication(null)} color="primary" variant="outlined">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

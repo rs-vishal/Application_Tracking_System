@@ -21,6 +21,11 @@ const job = new mongoose.Schema({
         type:Number,
         required:true
     },
+    postedBy:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        required:true
+    },
 });
 
 const Model = mongoose.model("Job", job);

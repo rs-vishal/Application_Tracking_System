@@ -29,7 +29,7 @@ export default function Login() {
       });
 
       localStorage.setItem("token", res.data.token);
-      login(res.data.user); // update context
+      login(res.data.user); 
       console.log(res.data.msg);
       navigate("/");
     } catch (err) {

@@ -8,10 +8,16 @@ const Job = require("../models/job.js");
 const Interview = require("../models/interview.js");
 const router = express.Router();
 
-router.post("/job",async (req, res) => {
+router.post("/createJob/:id",async (req, res) => {
     const { title, description, company ,status,salary } = req.body;
     try {
-        const job = new model({ title, description,company ,status, salary });
+        const postedBy = req.params.id; 
+        const existingJob = await model.findOne({ title, postedBy });
+        if (existingJob) {
+            return res.status(400).json({ msg: "Job already exists" });
+        }
+        
+        const job = new model({ title, description,company ,status, salary, postedBy });
         await job.save();
         res.status(201).json({ msg: "Job created successfully", job });
     } catch (err) {

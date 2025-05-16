@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { IoIosAddCircleOutline, IoMdClose, IoMdTrash } from "react-icons/io";
 import axios from "axios";
-import { LuSearch } from "react-icons/lu";
-import { Snackbar, Alert } from "@mui/material";
-import { FaEdit } from "react-icons/fa";
+import {
+  Snackbar,
+  Alert,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
 
-function Users() {
+// Icons
+import { LuSearch } from "react-icons/lu";
+import { FaEdit, FaUserPlus, FaTrashAlt } from "react-icons/fa";
+
+const Users = () => {
   const { user } = useAuth();
   const userRole = user?.role || null;
 
@@ -15,7 +24,7 @@ function Users() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
-  // Snackbar state
+  // Snackbar notifications
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -71,7 +80,7 @@ function Users() {
     setFormData({
       username: usr.username,
       email: usr.email,
-      password: "", // leave empty unless changing password
+      password: "",
       role: usr.role,
     });
     setIsModalOpen(true);
@@ -88,22 +97,14 @@ function Users() {
         password,
         role,
       });
-
       const updatedRes = await axios.get("http://localhost:4000/api/admin/users");
       setUsers(updatedRes.data);
-
-      setSnackbarMessage("User created successfully");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-
+      showSnackbar("User created successfully", "success");
       setIsModalOpen(false);
       setFormData({ username: "", email: "", password: "", role: "recruiter" });
     } catch (err) {
       const errorMsg = err.response?.data?.msg || "An error occurred";
-      console.error(errorMsg);
-      setSnackbarMessage(errorMsg);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar(errorMsg, "error");
     }
   };
 
@@ -111,7 +112,7 @@ function Users() {
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.put(
+      await axios.put(
         `http://localhost:4000/api/admin/user/edit/${editingUser._id}`,
         {
           username,
@@ -119,46 +120,38 @@ function Users() {
           role,
         }
       );
-
       const updatedRes = await axios.get("http://localhost:4000/api/admin/users");
       setUsers(updatedRes.data);
-
-      setSnackbarMessage("User updated successfully");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-
+      showSnackbar("User updated successfully", "success");
       setIsModalOpen(false);
       setIsEditModalOpen(false);
       setEditingUser(null);
       setFormData({ username: "", email: "", password: "", role: "recruiter" });
     } catch (err) {
       const errorMsg = err.response?.data?.msg || "An error occurred";
-      console.error(errorMsg);
-      setSnackbarMessage(errorMsg);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar(errorMsg, "error");
     }
   };
 
-  // Delete User without confirm()
+  // Delete User
   const handleDeleteUser = async (id) => {
     try {
       await axios.delete(`http://localhost:4000/api/admin/user/${id}`);
       setUsers(users.filter((user) => user._id !== id));
-
-      setSnackbarMessage("User deleted successfully");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
+      showSnackbar("User deleted successfully", "success");
     } catch (err) {
-      console.error("Error deleting user:", err.message);
-      setSnackbarMessage("Failed to delete user");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar("Failed to delete user", "error");
     }
   };
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   const filteredUsers = users.filter(
@@ -167,99 +160,104 @@ function Users() {
       usr.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
-  };
-
   return (
     <div className="relative min-h-screen bg-gray-900 text-white p-4 sm:p-6 md:p-8">
-      {/* Search + Create Button Section */}
+      {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        {/* Search Bar */}
         <div className="w-full sm:w-auto relative">
           <input
             type="text"
             placeholder="Search users..."
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="
-              w-full sm:w-[400px] h-[30px]
-              pl-3 pr-8 py-1
-              font-inter text-[12px] leading-[17px] text-gray-200
-              bg-gray-800 border border-gray-600 rounded-[4px]
+              w-full sm:w-[320px] h-10 px-3 py-2
+              font-inter text-sm text-gray-200
+              bg-gray-800 border border-gray-600 rounded-lg
               focus:outline-none focus:ring-2 focus:ring-blue-500
-              placeholder:text-gray-400
+              placeholder:text-gray-400 transition-all duration-200
             "
           />
           <LuSearch
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
-            size={16}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+            size={18}
           />
         </div>
+
+        {/* Create Button */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className={`
-            flex items-center justify-center gap-1
-            font-inter text-[12px] leading-[17px] font-normal text-white
-            bg-[#191E2C] opacity-100 rounded-[2px] border border-white
-            hover:bg-[#1f2937] hover:text-white
-            active:bg-[#191E2C] active:text-white
-            disabled:opacity-40
-            px-3 py-1.5 sm:px-4 sm:py-2
-          `}
+          className="
+            flex items-center gap-2
+            px-4 py-2 text-sm font-medium
+            bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+            text-white rounded-lg shadow-md
+            transition-all duration-200
+          "
         >
-          <IoIosAddCircleOutline className="h-[16px]" /> Create User
+          <FaUserPlus /> Create User
         </button>
       </div>
-      <div className="w-full h-[1px] bg-gray-700 my-2" />
+
+      <div className="w-full h-[1px] bg-gray-700 my-4" />
 
       {/* Loading State */}
       {loading ? (
-        <p className="text-gray-400">Loading users...</p>
+        <p className="text-gray-400 text-center py-4">Loading users...</p>
       ) : filteredUsers.length > 0 ? (
-        <div className="space-y-4 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           {filteredUsers.map((usr) => (
             <div
               key={usr._id}
-              className="relative bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-md"
+              className="bg-gray-800 border border-gray-700 rounded-xl shadow-lg hover:shadow-xl hover:bg-gray-750 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
             >
-              {/* Role badge centered horizontally */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -top-0.5">
-                <span className="px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded-full">
-                  {usr.role}
+              {/* Role Badge */}
+              <div className="flex justify-center pt-4">
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                    usr.role === "admin"
+                      ? "bg-purple-600 text-white"
+                      : usr.role === "recruiter"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-600 text-white"
+                  }`}
+                >
+                  {usr.role.charAt(0).toUpperCase() + usr.role.slice(1)}
                 </span>
               </div>
-              <div className="flex items-center justify-between mt-4">
-                {/* User Info */}
-                <div className="flex flex-col items-start mx-4 text-left">
-                  <h3 className="text-lg font-semibold">{usr.username}</h3>
-                  <p className="text-sm text-gray-300">{usr.email}</p>
-                </div>
-                {/* Action Buttons */}
-                <div className="flex items-center space-x-6">
-                  <button
-                    onClick={() => handleEditUser(usr)}
-                    className="text-blue-400 hover:text-blue-300"
-                    title="Edit User"
-                  >
-                    <FaEdit size={20} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteUser(usr._id)}
-                    className="text-red-400 hover:text-red-300"
-                    title="Delete User"
-                  >
-                    <IoMdTrash size={20} />
-                  </button>
-                </div>
+
+              {/* User Info */}
+              <div className="p-5">
+                <h3 className="text-lg font-bold text-white truncate">{usr.username}</h3>
+                <p className="text-sm text-gray-300 mt-1">{usr.email}</p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end p-4 border-t border-gray-700 bg-gray-850">
+                <button
+                  onClick={() => handleEditUser(usr)}
+                  className="text-blue-400 hover:text-blue-300 transition-colors mr-4"
+                  title="Edit User"
+                >
+                  <FaEdit size={18} />
+                </button>
+                <button
+                  onClick={() => handleDeleteUser(usr._id)}
+                  className="text-red-400 hover:text-red-300 transition-colors"
+                  title="Delete User"
+                >
+                  <FaTrashAlt size={18} />
+                </button>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-gray-400">No users found.</p>
+        <p className="text-gray-400 text-center py-6">No users found.</p>
       )}
 
-      {/* Dark Modal */}
+      {/* Modal */}
       {isModalOpen && (
         <>
           <div
@@ -270,15 +268,13 @@ function Users() {
               setEditingUser(null);
             }}
           ></div>
-          {/* Responsive Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-              className="bg-gray-800 text-white rounded-lg shadow-2xl w-full max-w-md mx-auto border border-gray-700 transition-all duration-300 ease-in-out"
+              className="bg-gray-800 text-white rounded-xl shadow-2xl w-full max-w-md mx-auto border border-gray-700 transition-all duration-300 ease-in-out animate-fadeIn"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header with Close Button */}
-              <div className="flex justify-between items-center p-4 border-b border-gray-700">
-                <h2 className="text-xl font-semibold">
+              <div className="flex justify-between items-center p-5 border-b border-gray-700">
+                <h2 className="text-xl font-bold">
                   {isEditModalOpen ? "Edit User" : "Create New User"}
                 </h2>
                 <button
@@ -289,87 +285,131 @@ function Users() {
                   }}
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  <IoMdClose size={24} />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
               </div>
-
-              {/* Body */}
               <form
                 onSubmit={isEditModalOpen ? handleUpdateUser : handleCreateUser}
                 className="p-6 space-y-4"
               >
-                {/* Username */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    name="username"
-                    value={username}
-                    onChange={onChange}
-                    required
-                    className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={email}
-                    onChange={onChange}
-                    required
-                    className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Password - only required when creating */}
+                <TextField
+                  label="Username"
+                  name="username"
+                  value={username}
+                  onChange={onChange}
+                  fullWidth
+                  variant="outlined"
+                  required
+                  InputProps={{ className: "text-white" }}
+                  InputLabelProps={{ style: { color: "#9ca3af" } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      color: "white",
+                      "& fieldset": {
+                        borderColor: "#4b5563",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "#6b7280",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#3b82f6",
+                      },
+                    },
+                  }}
+                />
+                <TextField
+                  label="Email"
+                  name="email"
+                  value={email}
+                  onChange={onChange}
+                  fullWidth
+                  variant="outlined"
+                  required
+                  InputProps={{ className: "text-white" }}
+                  InputLabelProps={{ style: { color: "#9ca3af" } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      color: "white",
+                      "& fieldset": {
+                        borderColor: "#4b5563",
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "#6b7280",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#3b82f6",
+                      },
+                    },
+                  }}
+                />
                 {!isEditModalOpen && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300">
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={password}
-                      onChange={onChange}
-                      required={!isEditModalOpen}
-                      className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                  <TextField
+                    label="Password"
+                    name="password"
+                    type="password"
+                    value={password}
+                    onChange={onChange}
+                    fullWidth
+                    variant="outlined"
+                    required
+                    InputProps={{ className: "text-white" }}
+                    InputLabelProps={{ style: { color: "#9ca3af" } }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        color: "white",
+                        "& fieldset": {
+                          borderColor: "#4b5563",
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "#6b7280",
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#3b82f6",
+                        },
+                      },
+                    }}
+                  />
                 )}
-
-                {/* Role */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300">
-                    Role
-                  </label>
-                  <select
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel sx={{ color: "#9ca3af" }}>Role</InputLabel>
+                  <Select
                     name="role"
                     value={role}
                     onChange={onChange}
-                    className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    label="Role"
+                    sx={{
+                      color: "white",
+                      ".MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#4b5563",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#6b7280",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#3b82f6",
+                      },
+                    }}
                   >
-                    <option value="user" className="bg-gray-800">
-                      User
-                    </option>
-                    <option value="recruiter" className="bg-gray-800">
-                      Recruiter
-                    </option>
-                    <option value="admin" className="bg-gray-800">
-                      Admin
-                    </option>
-                  </select>
-                </div>
+                    <MenuItem value="user">User</MenuItem>
+                    <MenuItem value="recruiter">Recruiter</MenuItem>
+                    <MenuItem value="admin">Admin</MenuItem>
+                  </Select>
+                </FormControl>
 
-                {/* Buttons */}
-                <div className="flex justify-end space-x-3 pt-2">
+                <div className="flex justify-end gap-3 pt-4">
                   <button
                     type="button"
                     onClick={() => {
@@ -377,13 +417,13 @@ function Users() {
                       setIsEditModalOpen(false);
                       setEditingUser(null);
                     }}
-                    className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-md transition-colors duration-200"
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md transition-colors duration-200"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
                   >
                     {isEditModalOpen ? "Update User" : "Create User"}
                   </button>
@@ -415,6 +455,6 @@ function Users() {
       </Snackbar>
     </div>
   );
-}
+};
 
 export default Users;
