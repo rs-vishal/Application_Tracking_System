@@ -197,7 +197,6 @@ const AdminApplications = () => {
     </div>
   );
 
-  // Handle closing selected application
   function handleSelectedAppClose() {
     setSelectedApp(null);
   }
