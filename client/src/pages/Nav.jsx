@@ -63,7 +63,7 @@ function Nav() {
       case "admin":
         return (
           <>
-            <NavItem to="/dashboard" icon={<LuLayoutDashboard />}>Dashboard</NavItem>
+            <NavItem to="/admin/dashboard" icon={<LuLayoutDashboard />}>Dashboard</NavItem>
             <Divider />
             <NavItem to="/jobs" icon={<PiSuitcaseSimpleBold />}>Jobs</NavItem>
             <Divider />
@@ -79,11 +79,11 @@ function Nav() {
           <>
             <NavItem to="/dashboard" icon={<LuLayoutDashboard />}>Dashboard</NavItem>
             <Divider />
-            <NavItem to="/jobs" icon={<PiSuitcaseSimpleBold />}>Jobs</NavItem>
+            <NavItem to="/recruiter/jobs" icon={<PiSuitcaseSimpleBold />}>Jobs</NavItem>
             <Divider />
             <NavItem to="/applications" icon={<TbListDetails />}>Applications</NavItem>
             <Divider />
-            <NavItem to="/create-job" icon={<RiFileList3Line />}>Create Job</NavItem>
+            <NavItem to="/recruiter/create-job" icon={<RiFileList3Line />}>Create Job</NavItem>
           </>
         );
       case "user":

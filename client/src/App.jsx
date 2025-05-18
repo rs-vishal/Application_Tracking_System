@@ -13,6 +13,9 @@ import Jobs from './pages/Jobs';
 import UserAppliedJobs from './pages/UserAppliedjobs';
 import ResumeView from './pages/ResumeView';
 import UserDashboard from './pages/UserDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import Recruiterjob from './pages/Recruiterjob';
+import Recruiterjobs from './pages/Recruiterjobs';
 function App() {
   const token = localStorage.getItem("token");
   const { user } = useAuth();
@@ -35,11 +38,16 @@ function App() {
               <Route path = '/user/dashboard' element={<UserDashboard/>}/>
               {role === "admin" && (
                 <>
-                  {/* <Route path="/admin" element={<h1>Admin</h1>} /> */}
                   <Route path="/admin/applications" element={<AdminApplications/>} />
                   <Route path="/admin/recruiters" element={<AdminRecruiters/>} />
-                                <Route path='/admin/users' element={<Users/>}/>
-
+                  <Route path='/admin/users' element={<Users/>}/>
+                  <Route path = '/admin/dashboard' element={<AdminDashboard/>} />
+                </>
+              )}
+              {role === "recruiter" && (
+                <>
+                  <Route path="/recruiter/create-job" element={<Recruiterjob/>} />
+                  <Route path="/recruiter/jobs" element={<Recruiterjobs/>} />
                 </>
               )}
             </Routes>
